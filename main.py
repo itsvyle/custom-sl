@@ -1,19 +1,37 @@
 import signal
 import curses
 import time
-from alphabet import ALPHABET, TEXT_HEIGHT
+import sys
 
 # =========================
 # USER CONTROLS
 # =========================
-
-SCROLL_LOOPS = 1  # 0 = infinite
-EAT_CTRL_C = True  # False = allow KeyboardInterrupt
+SCROLL_LOOPS = 5  # 0 = infinite
+EAT_CTRL_C = False  # False = allow KeyboardInterrupt
 SPEED = 0.05  # seconds per frame
 SPEED = 0.02
-
 TEXT = "MONSIEUR\n  JBB\nA L'AIDE"
+FONT_SIZE = "large"  # "large" or "small"
 
+if len(sys.argv) > 1:
+    if len(sys.argv) != 6:
+        print(
+            "Usage: python main.py <speed: seconds per frame; 0.02> <loops: 0=infinite> <eat_ctrl_c: 0 or 1> <font_size: large or small> '<text: use _ for spaces>'"
+        )
+        sys.exit(1)
+    SPEED = float(sys.argv[1])
+    SCROLL_LOOPS = int(sys.argv[2])
+    EAT_CTRL_C = bool(int(sys.argv[3]))
+    FONT_SIZE = sys.argv[4].lower()
+    TEXT = sys.argv[5].replace("_", " ").replace("\\n", "\n").upper()
+
+if FONT_SIZE == "large":
+    from alphabet import ALPHABET, TEXT_HEIGHT, LINES_SEP_COUNT
+elif FONT_SIZE == "small":
+    from alphabet5 import ALPHABET, TEXT_HEIGHT, LINES_SEP_COUNT
+else:
+    print("FONT_SIZE must be 'large' or 'small'")
+    sys.exit(1)
 # =========================
 # RENDERING
 # =========================
@@ -24,7 +42,9 @@ def render_big_text(text: str):
     lines = [""] * TEXT_HEIGHT
     for char in text.upper():
         if char == "\n":
-            lines.append("")  # Blank line between lines of text
+            lines.extend(
+                [""] * LINES_SEP_COUNT
+            )  # Blank line between lines of text
             big_lines.extend(lines)
             lines = [""] * TEXT_HEIGHT
             continue
@@ -61,6 +81,9 @@ def main(stdscr):
 
     loops_done = 0
     height, width = stdscr.getmaxyx()
+    if len(big_text) > height:
+        print("Error: Terminal height too small for the text.")
+        sys.exit(1)
     x = width
 
     while SCROLL_LOOPS == 0 or loops_done < SCROLL_LOOPS:

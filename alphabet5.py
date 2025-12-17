@@ -1,4 +1,5 @@
 TEXT_HEIGHT = 5
+LINES_SEP_COUNT = 1
 
 ALPHABET = {
     "A": [
