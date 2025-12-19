@@ -18,7 +18,7 @@ except ImportError:
 # =========================
 # USER CONTROLS
 # =========================
-SCROLL_LOOPS = 5  # 0 = infinite
+SCROLL_LOOPS = 1  # 0 = infinite
 EAT_CTRL_C = True  # False = allow KeyboardInterrupt
 SPEED = 0.05  # seconds per frame
 SPEED = 0.02
@@ -27,7 +27,6 @@ FONT_SIZE = "large"  # "large" or "small"
 
 if len(sys.argv) > 1:
     if len(sys.argv) == 2:
-        SCROLL_LOOPS = 1
         TEXT = sys.argv[1].replace("_", " ").replace("\\n", "\n").upper()
     else:
         if len(sys.argv) != 6:
