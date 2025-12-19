@@ -55,6 +55,15 @@ elif FONT_SIZE == "small":
 else:
     print("FONT_SIZE must be 'large' or 'small'")
     sys.exit(1)
+
+
+def center_text(t):
+    lines = t.split("\n")
+    max_len = max(len(line) for line in lines)
+    centered_lines = [line.center(max_len) for line in lines]
+    return "\n".join(centered_lines)
+
+
 # =========================
 # RENDERING
 # =========================
@@ -99,7 +108,7 @@ def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(True)
 
-    big_text = render_big_text(TEXT)
+    big_text = render_big_text(center_text(TEXT))
     text_width = len(big_text[0])
 
     loops_done = 0
@@ -136,5 +145,7 @@ if __name__ == "__main__":
         signal.signal(signal.SIGINT, signal.SIG_IGN)
         curses.wrapper(main)
     else:
-        # Let Ctrl-C raise KeyboardInterrupt
-        curses.wrapper(main)
+        try:
+            curses.wrapper(main)
+        except KeyboardInterrupt:
+            sys.exit(1)
