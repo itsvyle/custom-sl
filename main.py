@@ -3,32 +3,56 @@ import curses
 import time
 import sys
 
+is_defined = lambda var: var in globals() or var in locals()
+
+try:
+    if not is_defined("alphabet_large"):
+        from alphabet import alphabet_large
+    if not is_defined("alphabet_small"):
+        from alphabet5 import alphabet_small
+except ImportError:
+    print("Error: Could not import alphabet modules.")
+    sys.exit(1)
+
+
 # =========================
 # USER CONTROLS
 # =========================
 SCROLL_LOOPS = 5  # 0 = infinite
-EAT_CTRL_C = False  # False = allow KeyboardInterrupt
+EAT_CTRL_C = True  # False = allow KeyboardInterrupt
 SPEED = 0.05  # seconds per frame
 SPEED = 0.02
-TEXT = "MONSIEUR\n  JBB\nA L'AIDE"
+TEXT = "MONSIEUR\n  JBB\nA L'AIDE!"
 FONT_SIZE = "large"  # "large" or "small"
 
 if len(sys.argv) > 1:
-    if len(sys.argv) != 6:
-        print(
-            "Usage: python main.py <speed: seconds per frame; 0.02> <loops: 0=infinite> <eat_ctrl_c: 0 or 1> <font_size: large or small> '<text: use _ for spaces>'"
-        )
-        sys.exit(1)
-    SPEED = float(sys.argv[1])
-    SCROLL_LOOPS = int(sys.argv[2])
-    EAT_CTRL_C = bool(int(sys.argv[3]))
-    FONT_SIZE = sys.argv[4].lower()
-    TEXT = sys.argv[5].replace("_", " ").replace("\\n", "\n").upper()
+    if len(sys.argv) == 2:
+        SCROLL_LOOPS = 1
+        TEXT = sys.argv[1].replace("_", " ").replace("\\n", "\n").upper()
+    else:
+        if len(sys.argv) != 6:
+            print(
+                "Usage: python main.py <speed: seconds per frame; 0.02> <loops: 0=infinite> <eat_ctrl_c: 0 or 1> <font_size: large or small> '<text: use _ for spaces>'"
+            )
+            sys.exit(1)
+        SPEED = float(sys.argv[1])
+        SCROLL_LOOPS = int(sys.argv[2])
+        EAT_CTRL_C = bool(int(sys.argv[3]))
+        FONT_SIZE = sys.argv[4].lower()
+        TEXT = sys.argv[5].replace("_", " ").replace("\\n", "\n").upper()
 
+
+TEXT_HEIGHT = 0
+LINES_SEP_COUNT = 0
+ALPHABET = {}
 if FONT_SIZE == "large":
-    from alphabet import ALPHABET, TEXT_HEIGHT, LINES_SEP_COUNT
+    TEXT_HEIGHT = alphabet_large["TEXT_HEIGHT"]
+    LINES_SEP_COUNT = alphabet_large["LINES_SEP_COUNT"]
+    ALPHABET = alphabet_large["ALPHABET"]
 elif FONT_SIZE == "small":
-    from alphabet5 import ALPHABET, TEXT_HEIGHT, LINES_SEP_COUNT
+    TEXT_HEIGHT = alphabet_small["TEXT_HEIGHT"]
+    LINES_SEP_COUNT = alphabet_small["LINES_SEP_COUNT"]
+    ALPHABET = alphabet_small["ALPHABET"]
 else:
     print("FONT_SIZE must be 'large' or 'small'")
     sys.exit(1)
