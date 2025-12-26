@@ -28,7 +28,7 @@ struct Args {
     #[arg(long, short = 'e', default_value_t = false)]
     allow_exit: bool,
 
-    #[arg(long, short = 'f', default_value_t = 30)]
+    #[arg(long, short = 'f', default_value_t = 60)]
     fps: u32,
 
     #[arg(long, short = 'l', default_value_t = false)]
