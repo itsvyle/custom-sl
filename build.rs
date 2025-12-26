@@ -3,9 +3,12 @@ use std::{env, fs, path::PathBuf};
 
 #[derive(Deserialize)]
 struct AlphabetJson {
-    TEXT_HEIGHT: usize,
-    LINES_SEP_COUNT: usize,
-    ALPHABET: std::collections::BTreeMap<String, Vec<String>>,
+    #[serde(rename = "TEXT_HEIGHT")]
+    text_height: usize,
+    #[serde(rename = "LINES_SEP_COUNT")]
+    lines_sep_count: usize,
+    #[serde(rename = "ALPHABET")]
+    alphabet: std::collections::BTreeMap<String, Vec<String>>,
 }
 
 fn do_alphabet_file(file: &str) {
@@ -20,7 +23,7 @@ fn do_alphabet_file(file: &str) {
     out.push_str("pub fn generated_alphabet() -> Alphabet {\n");
     out.push_str("    let mut letters: HashMap<char, Vec<&'static str>> = HashMap::new();\n\n");
 
-    for (key, glyph) in parsed.ALPHABET {
+    for (key, glyph) in parsed.alphabet {
         let mut chars = key.chars();
 
         let ch = chars.next().expect("Empty alphabet key");
@@ -51,7 +54,7 @@ fn do_alphabet_file(file: &str) {
 
     out.push_str(&format!(
         "    Alphabet {{ letters, letter_height: {}, line_spacing: {} }}\n",
-        parsed.TEXT_HEIGHT, parsed.LINES_SEP_COUNT
+        parsed.text_height, parsed.lines_sep_count
     ));
     out.push_str("}\n");
 

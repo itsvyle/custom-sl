@@ -2,7 +2,7 @@ use std::io::Write;
 use std::time::Instant;
 use std::{io::stdout, thread, time::Duration};
 
-use anyhow::{Context as _, Result as AnyhowResult};
+use anyhow::Result as AnyhowResult;
 use clap::Parser;
 use crossterm::queue;
 use crossterm::{
@@ -16,6 +16,7 @@ use prepare_text::*;
 mod prepare_text;
 mod safe_print;
 use safe_print::safe_print;
+use unicode_width::UnicodeWidthStr;
 
 #[derive(Parser, Debug)]
 #[command(version, about = "A program to make custom text fly accross the screen", long_about = None)]
@@ -37,29 +38,42 @@ struct Args {
     text: String,
 }
 
+struct TerminalDrop;
+impl Drop for TerminalDrop {
+    fn drop(&mut self) {
+        let mut out = stdout();
+        terminal::disable_raw_mode().ok();
+        execute!(out, terminal::LeaveAlternateScreen, cursor::Show).ok();
+    }
+}
+
 fn main() -> AnyhowResult<()> {
     let args = Args::parse();
 
     let alphabet = alphabet_gen::generated_alphabet();
-    let centered = center_text(&args.text);
+    let centered = center_text(&args.text.replace("\\n", "\n"));
     let big_text = render_big_text(&centered, &alphabet);
-    let text_width = big_text.first().map(|l| l.len()).unwrap_or(0) as i16;
+
+    let text_width = big_text
+        .iter()
+        .map(|line| UnicodeWidthStr::width(line.as_str()))
+        .max()
+        .unwrap_or(0) as i16;
     let frame_time = Duration::from_millis(1000 / args.fps as u64);
 
-    terminal::enable_raw_mode()?;
     let mut out = stdout();
-
+    terminal::enable_raw_mode()?;
     execute!(
         out,
         terminal::EnterAlternateScreen,
         cursor::Hide,
         terminal::Clear(terminal::ClearType::All)
     )?;
+    let _terminal_drop = TerminalDrop;
 
-    let (mut width, mut height) = crossterm::terminal::size()?;
+    let (mut width, mut height) = terminal::size()?;
     if big_text.len() > height as usize {
-        terminal::disable_raw_mode()?;
-        execute!(out, terminal::LeaveAlternateScreen, cursor::Show)?;
+        drop(_terminal_drop);
         anyhow::bail!("Terminal height too small");
     }
 
@@ -69,16 +83,16 @@ fn main() -> AnyhowResult<()> {
     while args.scroll_loops == 0 || loops_done < args.scroll_loops {
         let start = Instant::now();
 
-        let (w, h) = crossterm::terminal::size()?;
+        let (w, h) = terminal::size()?;
         width = w;
         height = h;
 
         queue!(out, terminal::Clear(terminal::ClearType::All))?;
 
-        let y_base = height as i16 / 2 - big_text.len() as i16 / 2;
+        let y = height as i16 / 2 - big_text.len() as i16 / 2;
 
-        for (i, line) in big_text.iter().enumerate() {
-            safe_print(&mut out, y_base + i as i16, x, line, width, height);
+        for (dy, line) in big_text.iter().enumerate() {
+            safe_print(&mut out, y + dy as i16, x, line, width, height)?;
         }
 
         out.flush()?;
@@ -103,7 +117,6 @@ fn main() -> AnyhowResult<()> {
         }
     }
 
-    terminal::disable_raw_mode()?;
-    execute!(out, terminal::LeaveAlternateScreen, cursor::Show)?;
+    drop(_terminal_drop);
     Ok(())
 }

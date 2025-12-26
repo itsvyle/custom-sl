@@ -8,6 +8,7 @@ anyhow = "1.0.100"
 clap = { version = "4.5.53", features = ["derive"] }
 crossterm = "0.29.0"
 ncurses = "6.0.1"
+unicode-width = "0.2.2"
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }
