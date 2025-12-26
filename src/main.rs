@@ -50,7 +50,11 @@ impl Drop for TerminalDrop {
 fn main() -> AnyhowResult<()> {
     let args = Args::parse();
 
-    let alphabet = alphabet_gen::generated_alphabet();
+    let alphabet = if args.little {
+        alphabet_gen::generated_alphabet_small()
+    } else {
+        alphabet_gen::generated_alphabet_large()
+    };
     let centered = center_text(&args.text.replace("\\n", "\n"));
     let big_text = render_big_text(&centered, &alphabet);
 

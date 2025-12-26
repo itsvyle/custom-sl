@@ -11,7 +11,7 @@ struct AlphabetJson {
     alphabet: std::collections::BTreeMap<String, Vec<String>>,
 }
 
-fn do_alphabet_file(file: &str) {
+fn do_alphabet_file(file: &str, name: &str) -> String {
     println!("cargo:rerun-if-changed={}", file);
 
     let json = fs::read_to_string(file).unwrap();
@@ -19,8 +19,10 @@ fn do_alphabet_file(file: &str) {
 
     let mut out = String::new();
 
-    out.push_str("use std::collections::HashMap;\n\n");
-    out.push_str("pub fn generated_alphabet() -> Alphabet {\n");
+    out.push_str(&format!(
+        "pub fn generated_alphabet_{}() -> Alphabet {{\n",
+        name
+    ));
     out.push_str("    let mut letters: HashMap<char, Vec<&'static str>> = HashMap::new();\n\n");
 
     for (key, glyph) in parsed.alphabet {
@@ -58,11 +60,15 @@ fn do_alphabet_file(file: &str) {
     ));
     out.push_str("}\n");
 
-    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    fs::write(out_dir.join("alphabet_generated.rs"), out).unwrap();
+    out
 }
 
 fn main() {
-    do_alphabet_file("src/alphabet-large.json");
-    // do_alphabet_file("src/alphabet-small.json");
+    let mut out = String::new();
+    out.push_str("use std::collections::HashMap;\n\n");
+    out += &do_alphabet_file("src/alphabet-large.json", "large");
+    out += &do_alphabet_file("src/alphabet-small.json", "small");
+
+    let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
+    fs::write(out_dir.join("alphabet_generated.rs"), out).unwrap();
 }
