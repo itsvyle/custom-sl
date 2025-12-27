@@ -3,7 +3,7 @@ use std::time::Instant;
 use std::{io::stdout, thread, time::Duration};
 
 use anyhow::Result as AnyhowResult;
-use clap::Parser;
+use clap::{CommandFactory, FromArgMatches, Parser};
 use crossterm::queue;
 use crossterm::{
     cursor,
@@ -12,11 +12,11 @@ use crossterm::{
     terminal::{self},
 };
 use prepare_text::*;
+use unicode_width::UnicodeWidthStr;
 
 mod prepare_text;
 mod safe_print;
 use safe_print::safe_print;
-use unicode_width::UnicodeWidthStr;
 
 #[derive(Parser, Debug)]
 #[command(version, about = "A program to make custom text fly accross the screen", long_about = None)]
@@ -25,15 +25,19 @@ struct Args {
     #[arg(long, default_value_t = 1)]
     scroll_loops: u32,
 
+    /// Allow exiting the program by pressing any key
     #[arg(long, short = 'e', default_value_t = false)]
     allow_exit: bool,
 
+    /// Frames per second
     #[arg(long, short = 'f', default_value_t = 60)]
     fps: u32,
 
+    /// Use the small alphabet
     #[arg(long, short = 'l', default_value_t = false)]
     little: bool,
 
+    /// Text to display
     #[arg(default_value = "Text Here")]
     text: String,
 }
@@ -48,7 +52,8 @@ impl Drop for TerminalDrop {
 }
 
 fn main() -> AnyhowResult<()> {
-    let args = Args::parse();
+    // Parse arguments, ignoring errors to allow flags that would be passed to sl (so that this sl can replace the old one, without implementing all its flags)
+    let args = Args::from_arg_matches_mut(&mut Args::command().ignore_errors(true).get_matches())?;
 
     let alphabet = if args.little {
         alphabet_gen::generated_alphabet_small()
