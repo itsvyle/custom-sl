@@ -28,6 +28,9 @@ struct Args {
     /// Allow exiting the program by pressing any key
     #[arg(long, short = 'e', default_value_t = false)]
     allow_exit: bool,
+    
+    #[arg(long, short = 'w', default_value_t = false)]
+    faster_text: bool,
 
     /// Frames per second
     #[arg(long, short = 'f', default_value_t = 60)]
@@ -53,7 +56,10 @@ impl Drop for TerminalDrop {
 
 fn main() -> AnyhowResult<()> {
     // Parse arguments, ignoring errors to allow flags that would be passed to sl (so that this sl can replace the old one, without implementing all its flags)
-    let args = Args::from_arg_matches_mut(&mut Args::command().ignore_errors(true).get_matches())?;
+    let mut args = Args::from_arg_matches_mut(&mut Args::command().ignore_errors(true).get_matches())?;
+    if args.faster_text && args.fps == 60 {
+        args.fps = 120;
+    }
 
     let alphabet = if args.little {
         alphabet_gen::generated_alphabet_small()
