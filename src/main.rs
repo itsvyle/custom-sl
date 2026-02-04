@@ -28,7 +28,7 @@ struct Args {
     /// Allow exiting the program by pressing any key
     #[arg(long, short = 'e', default_value_t = false)]
     allow_exit: bool,
-    
+
     #[arg(long, short = 'w', default_value_t = false)]
     faster_text: bool,
 
@@ -56,7 +56,8 @@ impl Drop for TerminalDrop {
 
 fn main() -> AnyhowResult<()> {
     // Parse arguments, ignoring errors to allow flags that would be passed to sl (so that this sl can replace the old one, without implementing all its flags)
-    let mut args = Args::from_arg_matches_mut(&mut Args::command().ignore_errors(true).get_matches())?;
+    let mut args =
+        Args::from_arg_matches_mut(&mut Args::command().ignore_errors(true).get_matches())?;
     if args.faster_text && args.fps == 60 {
         args.fps = 120;
     }
@@ -74,7 +75,7 @@ fn main() -> AnyhowResult<()> {
         .map(|line| UnicodeWidthStr::width(line.as_str()))
         .max()
         .unwrap_or(0) as i16;
-    let frame_time = Duration::from_millis(1000 / args.fps as u64);
+    let mut frame_time = Duration::from_millis(1000 / args.fps as u64);
 
     let mut out = stdout();
     terminal::enable_raw_mode()?;
@@ -121,9 +122,11 @@ fn main() -> AnyhowResult<()> {
         // Non-blocking input
         if event::poll(Duration::from_millis(0))?
             && let Event::Key(KeyEvent { .. }) = event::read()?
-            && args.allow_exit
         {
-            break;
+            if args.allow_exit {
+                break;
+            }
+            frame_time = frame_time.mul_f32(1.5);
         }
 
         let elapsed = start.elapsed();
