@@ -126,7 +126,7 @@ fn main() -> AnyhowResult<()> {
             if args.allow_exit {
                 break;
             }
-            frame_time = frame_time.mul_f32(1.5);
+            frame_time = frame_time.mul_f32(1.25);
         }
 
         let elapsed = start.elapsed();
