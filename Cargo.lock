@@ -159,6 +159,7 @@ dependencies = [
  "anyhow",
  "clap",
  "crossterm",
+ "font8x8",
  "serde",
  "serde_json",
  "unicode-width",
@@ -204,6 +205,10 @@ dependencies = [
  "libc",
  "windows-sys",
 ]
+
+[[package]]
+name = "font8x8"
+version = "0.3.1"
 
 [[package]]
 name = "heck"

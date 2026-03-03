@@ -8,6 +8,7 @@ anyhow = "1.0.100"
 clap = { version = "4.5.53", features = ["derive"] }
 crossterm = "0.29.0"
 unicode-width = "0.2.2"
+font8x8 = {version = "*", path = "./font8x8-rs"}
 
 [build-dependencies]
 serde = { version = "1", features = ["derive"] }

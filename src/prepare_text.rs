@@ -1,3 +1,4 @@
+use font8x8::{BASIC_FONTS, BOX_FONTS, GREEK_FONTS, LATIN_FONTS, MISC_FONTS, UnicodeFonts};
 use std::collections::HashMap;
 
 pub mod alphabet_gen {
@@ -36,11 +37,28 @@ pub fn center_text(text: &str) -> String {
     centered.join("\n")
 }
 
+macro_rules! try_font {
+    ($fonts:expr, $c:expr) => {
+        if let Some(glyph) = $fonts.get($c) {
+            return glyph;
+        }
+    };
+}
+
+#[inline]
+pub fn get_8x8_glyph(c: char) -> [u8; 8] {
+    try_font!(BASIC_FONTS, c);
+    try_font!(LATIN_FONTS, c);
+    try_font!(MISC_FONTS, c);
+    try_font!(BOX_FONTS, c);
+    [0; 8]
+}
+
 pub fn render_big_text(text: &str, alphabet: &Alphabet) -> Vec<String> {
     let mut big_lines = Vec::new();
     let mut lines = vec![String::new(); alphabet.letter_height];
 
-    for ch in text.to_uppercase().chars() {
+    for ch in text.chars() {
         if ch == '\n' {
             big_lines.append(&mut lines);
 
@@ -52,11 +70,15 @@ pub fn render_big_text(text: &str, alphabet: &Alphabet) -> Vec<String> {
             continue;
         }
 
-        let glyph = alphabet.get(ch);
+        let glyph = get_8x8_glyph(ch);
 
-        for i in 0..alphabet.letter_height {
-            lines[i].push_str(glyph[i]);
-            lines[i].push_str("  ");
+        for (i, x) in glyph.iter().enumerate() {
+            for bit in 0..8 {
+                match *x & 1 << bit {
+                    0 => lines[i].push(' '),
+                    _ => lines[i].push('█'),
+                }
+            }
         }
     }
 
