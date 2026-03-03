@@ -1,4 +1,4 @@
-use font8x8::{BASIC_FONTS, BOX_FONTS, GREEK_FONTS, LATIN_FONTS, MISC_FONTS, UnicodeFonts};
+use font8x8::{BASIC_FONTS, BOX_FONTS, LATIN_FONTS, MISC_FONTS, UnicodeFonts};
 use std::collections::HashMap;
 
 pub mod alphabet_gen {

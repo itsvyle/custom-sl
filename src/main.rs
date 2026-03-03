@@ -121,7 +121,11 @@ fn main() -> AnyhowResult<()> {
 
         // Non-blocking input
         if event::poll(Duration::from_millis(0))?
-            && let Event::Key(KeyEvent { .. }) = event::read()?
+            && let Event::Key(KeyEvent {
+                code, modifiers, ..
+            }) = event::read()?
+            && code == event::KeyCode::Char('c')
+            && modifiers.contains(event::KeyModifiers::CONTROL)
         {
             if args.allow_exit {
                 break;
